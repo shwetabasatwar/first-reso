@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Drag and Drop File Upload</title>
+  <style>
+    #drop-area {
+      border: 2px dashed #ccc;
+      border-radius: 20px;
+      width: 300px;
+      padding: 20px;
+      text-align: center;
+      margin: 20px auto;
+    }
+
+    #drop-area.highlight {
+      border-color: #007bff;
+    }
+
+    #file-list {
+      list-style-type: none;
+      padding: 0;
+    }
+
+    .file-item {
+      margin-bottom: 10px;
+    }
+
+    .file-item span {
+      font-size: 0.9em;
+      margin-left: 10px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div id="drop-area">
+    <h3>Drag and Drop Files Here</h3>
+    <p>Or click to select files</p>
+    <input type="file" id="file-input" multiple>
+  </div>
+
+  <ul id="file-list"></ul>
+
+  <script>
+    const dropArea = document.getElementById('drop-area');
+    const fileList = document.getElementById('file-list');
+
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+      dropArea.addEventListener(eventName, preventDefaults, false);
+      document.body.addEventListener(eventName, preventDefaults, false);
+    });
+
+    function preventDefaults(e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+
+    dropArea.addEventListener('dragenter', highlight, false);
+    dropArea.addEventListener('dragover', highlight, false);
+    dropArea.addEventListener('dragleave', unhighlight, false);
+    dropArea.addEventListener('drop', handleDrop, false);
+
+    function highlight() {
+      dropArea.classList.add('highlight');
+    }
+
+    function unhighlight() {
+      dropArea.classList.remove('highlight');
+    }
+
+    function handleDrop(e) {
+      const dt = e.dataTransfer;
+      const files = dt.files;
+
+      handleFiles(files);
+    }
+
+    function handleFiles(files) {
+      [...files].forEach(uploadFile);
+    }
+
+    function uploadFile(file) {
+      const reader = new FileReader();
+
+      reader.onload = function (e) {
+        const listItem = document.createElement('li');
+        listItem.classList.add('file-item');
+        listItem.innerHTML = `
+                              <img src=${e.target.result} width="100px"/>
+                              <strong>${file.name}</strong> (${formatBytes(file.size)})`;
+        console.log(e.target.result);
+        fileList.appendChild(listItem);
+      };
+
+      reader.readAsDataURL(file);
+    }
+
+    function formatBytes(bytes, decimals = 2) {
+      if (bytes === 0) return '0 Bytes';
+      const k = 1024;
+      const dm = decimals < 0 ? 0 : decimals;
+      const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+    }
+  </script>
+
+</body>
+
+</html>
